@@ -1,0 +1,38 @@
+---
+- hosts: webservers
+  remote_user: root
+  vars:
+    port: "80"
+    webip: "www.qfphone.com"
+    newpass: "ZYx..(12138)"
+    database: "work"
+  tasks:
+    - name: transport repo file of lnmp
+      template: src="./lnmp.repo" dest="/etc/yum.repos.d/lnmp.repo"
+
+    #- name: install lnmp
+    #  yum: 
+    #    name: ["nginx", "mysql-community-server", "php", "php-fpm", "php-gd", "php-xml", "php-devel", "php-mysql", "php-curl", "php-mbstring", "php-mcrypt"] 
+    #    state: latest
+
+    - name: nginx create
+      template: src="./nginx-setting.j2" dest="/etc/nginx/conf.d/default.conf"
+      notify: 
+        - restart nginx
+    - name: nginx restart
+      service: name="nginx" state="restarted" enabled="true"
+
+    - name: mysql start
+      template: src="./mysqld.j2" dest="$HOME/mysqld.sh" mode="7777"
+
+    - name: execute mysql
+      shell: "bash $HOME/mysqld.sh"
+
+    - name: php create
+      template: src="./phptest.j2" dest="/usr/share/nginx/html/index.php"
+
+    - name: php restart
+      service: name="php-fpm" state="restarted" enabled="true"
+  handlers:
+    - name: restart nginx
+      service: name="nginx" state="restarted" enabled="true"

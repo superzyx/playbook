@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+#
+#date: 2019/09/03
+#author: superzyx
+#usage: mysqld inital
+
+
+sleep 15
+systemctl status mysql &>>/dev/null
+if [ $? -ne 0 ];then
+  systemctl start mysqld && systemctl enable mysqld
+fi
+passwd=$(grep "temporary password" /var/log/mysqld.log | awk '{print $NF}')
+database="{{ database }}"
+password="{{ newpass }}"
+mysql --connect-expired-password -uroot -p"${passwd}" -e "alter user root@localhost identified by '${password}';"
+mysql -uroot -p"${password}" -e "create database ${database};"
+mysql -uroot -p"${password}" -e "grant all privileges on ${database}.* to php@localhost identified by '${password}';"
+
+
+
