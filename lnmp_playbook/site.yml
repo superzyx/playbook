@@ -1,0 +1,21 @@
+---
+- name: deloy nginx web
+  hosts: nginx
+  gather_facts: False
+  remote_user: root
+  roles: 
+    - nginx
+
+- name: deloy php 
+  hosts: php
+  gather_facts: False
+  remote_user: root
+  roles:
+    - php
+
+- name: deloy mysql
+  hosts: mysql
+  gather_facts: False
+  remote_user: root
+  roles:
+    - mysql

@@ -1,0 +1,29 @@
+---
+- name: transfer mysql source
+  template:
+    src: mysql.repo
+    dest: /etc/yum.repos.d/mysql.repo
+
+- name: install mysql
+  yum:
+    name: ['MySQL-python', 'mysql-community-server']
+    state: latest
+  notify:
+    - start mysql
+
+- name: transfer shell scripts
+  template: 
+    src: gpasswd.j2
+    dest: $HOME/gpasswd.sh
+
+- name: grep passwd
+  shell: 'bash $HOME/gpasswd.sh'
+
+
+- name: create database
+  mysql_db:
+    login_host={{ sqlip }}
+    login_user={{ sqluser }}
+    login_password={{ sqlpasswd }}
+    name={{ sqldb }}
+    state=present

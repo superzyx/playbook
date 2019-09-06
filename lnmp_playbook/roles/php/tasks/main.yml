@@ -1,0 +1,23 @@
+---
+- name: transfer php source
+  template:
+    src: php.repo
+    dest: /etc/yum.repos.d/php.repo
+
+- name: install php
+  yum: 
+    name: ['php', 'php-fpm', 'php-gd', 'php-mbstring', 'php-xml', 'php-devel', 'php-mysql', 'php-mcrypt']
+    state: latest
+  notify:
+    - start php
+
+- name: transfer php idex
+  template:
+    src: index.j2
+    dest: /usr/share/nginx/index.php
+
+- name: restart php-fpm
+  service:
+    name: php-fpm
+    state: restarted
+    enabled: true
