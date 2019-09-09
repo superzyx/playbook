@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+#
+#date: 2019/09/05
+#author: superzyx
+#usage: grep passwd initial mysql
+
+
+systemctl status mysqld &>/dev/null
+if [ $? -ne 0 ];then
+  systemctl start mysqld && systemctl enable mysqld
+fi
+
+old_passwd="$(grep 'temporary password' /var/log/mysqld.log | awk '{print $NF}')"
+new_passwd="{{ sqlpass }}"
+mysql --connect-expired-password -uroot -p"${old_passwd}" -e "alter user root@localhost identified by '${new_passwd}';"  
+

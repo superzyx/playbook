@@ -1,0 +1,12 @@
+---
+#- name: roply master
+#  hosts: master
+#  remote_user: root
+#  roles: 
+#    - master
+
+- name: reloy slave
+  hosts: slave
+  remote_user: root
+  roles: 
+    - slave

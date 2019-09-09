@@ -1,0 +1,37 @@
+---
+- name: transfer mysql repo
+  template: 
+    src: mysql.repo
+    dest: /etc/yum.repos.d/mysql.repo
+
+- name: install mysql
+  yum: 
+    name: ['MySQL-python', 'mysql-community-server']
+    state: latest
+  notify:
+    - start mysql
+
+- name: transfer mysql settings
+  template:
+    src: my.cnf
+    dest: /etc/my.cnf
+  notify:
+    - restart mysql
+
+- name: transfer shell scripts
+  template:
+    src: mysql.j2
+    dest: $HOME/mysql.sh
+
+- name: bash scripts to change password
+  shell: "bash $HOME/mysql.sh"
+
+- name: make master
+  mysql_user:
+    login_user: root
+    login_password: "{{ sqlpass }}"
+    user: "{{ sqluser }}"
+    host: "{{ slaveip }}"
+    password: "{{ sqlpass }}"
+    priv: "*.*:REPLICATION CLIENT"
+    state: present

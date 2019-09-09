@@ -1,0 +1,60 @@
+---
+- name: transfer mysql repo
+  template: 
+    src: mysql.repo
+    dest: /etc/yum.repos.d/mysql.repo
+
+#- name: install mysql
+#  yum: 
+#    name: ['MySQL-python', 'mysql-community-server']
+#    state: latest
+#  notify:
+#    - start mysql
+#
+- name: transfer mysql settings
+  template:
+    src: my.cnf
+    dest: /etc/my.cnf
+  notify:
+    - restart mysql
+#
+#- name: transfer shell scripts
+#  template:
+#    src: mysql.j2
+#    dest: $HOME/mysql.sh
+#
+#- name: bash scripts to change password
+#  shell: "bash $HOME/mysql.sh"
+
+
+- name: restart mysql
+  service:
+    name: mysqld
+    state: restarted
+    enabled: true
+
+- name: touch relay-bin
+  shell: 'touch /var/log/relay-bin.index'
+
+- name: make slave
+  mysql_replication:
+    login_user: root
+    login_password: "{{ sqlpass }}"
+    mode: getmaster
+
+- name: Configure replication on the slave
+  mysql_replication:
+    login_user: root
+    login_password: "{{ sqlpass }}"
+    mode: changemaster
+    master_host: "{{ masterip }}"
+    master_user: "{{ sqluser }}"
+    master_password: "{{ sqlpass }}"
+    master_log_file: "{{ master.File }}"
+    master_log_pos: "{{ master.Position }}"
+
+- name: slave info
+  mysql_replication:
+    login_user: "{{ sqluser }}"
+    login_password: "{{ sqlpass }}"
+    mode: startslave
